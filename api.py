@@ -14,7 +14,7 @@ def hello_world():
 
 @api.route('/plot')
 def get_plot():
-    bytes_obj = project.plot()
+    bytes_obj = project.productionPerYear()
     return send_file(bytes_obj,
                      attachment_filename='plot.png',
                      mimetype='image/png')
