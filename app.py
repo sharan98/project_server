@@ -6,6 +6,8 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 import io
+from sklearn.cluster import KMeans
+
 
 class Project():
     def __init__(self, uri = URI, dbName = DB_NAME, collection = COLLECTION):
@@ -68,10 +70,10 @@ class Project():
         # print(new_df.head())
         mean_produce = []
         for i in range(174):
-            print(new_df.iloc[i,:].values)
+            #print(new_df.iloc[i,:].values)
             l = [0 if x=='' else x for x in new_df.iloc[i,:].values]
             mean_produce.append(mean(l))
-            print(mean_produce)
+            #print(mean_produce)
         new_df['Mean_Produce'] = mean_produce
 
         new_df['Rank'] = new_df['Mean_Produce'].rank(ascending=False)
@@ -94,7 +96,7 @@ class Project():
         # total amount produced for each commodity rank them in descending order 
         sum_col = []
         for i in range(115):
-            print(item_df.iloc[i,1:].values)    # first element is name of item
+            #print(item_df.iloc[i,1:].values)    # first element is name of item
             l = [0 if x=='' else x for x in item_df.iloc[i,1:].values]
             sum_col.append(sum(l))
         item_df['Sum'] = sum_col
@@ -102,13 +104,59 @@ class Project():
 
         print(item_df.head())
 
+        #plt.close('all')
         # heat map showing correlation of Year on year production 
-        year_df = df.iloc[:,10:]
+        year_df = df.iloc[:,8:-2]
         print(year_df.head())
+        year_df = year_df.apply(pd.to_numeric,errors = 'ignore')
         fig, ax = plt.subplots()
-        sns.heatmap(year_df.corr(), ax=ax)
+        print(year_df.corr())
+        sns.heatmap(year_df.corr())
         #print(heatmap)
+        #plt.show()
+
+        # heat map for products over the years
+        new_item_df = item_df.drop(["Item_Name","Sum","Production_Rank"], axis = 1)
+        fig, ax = plt.subplots(figsize=(12,24))
+        sns.heatmap(new_item_df,ax=ax)
+        ax.set_yticklabels(item_df.Item_Name.values[::-1])
+        #plt.show()
+
+        #k-means taking data set
+        X = new_df.iloc[:,:-2].values
+
+        X = pd.DataFrame(X)
+        X = X.convert_objects(convert_numeric=True)
+        X.columns = year_list
+        X = pd.DataFrame(X).fillna(0)
+        print(year_list)
+        print(X.head())
+
+        
+        wcss = []
+        for i in range(1,11):
+            kmeans = KMeans(n_clusters=i,init='k-means++',max_iter=300,n_init=10,random_state=0)
+            kmeans.fit(X)
+            wcss.append(kmeans.inertia_)
+        plt.plot(range(1,11),wcss)
+        plt.title('The Elbow Method')
+        plt.xlabel('Number of clusters')
+        plt.ylabel('WCSS')
         plt.show()
+
+        kmeans = KMeans(n_clusters=2,init='k-means++',max_iter=300,n_init=10,random_state=0) 
+        y_kmeans = kmeans.fit_predict(X)
+
+        X = X.as_matrix(columns=None)
+
+        plt.scatter(X[y_kmeans == 0, 0], X[y_kmeans == 0,1],s=100,c='red',label='Others')
+        plt.scatter(X[y_kmeans == 1, 0], X[y_kmeans == 1,1],s=100,c='blue',label='China(mainland),USA,India')
+        plt.scatter(kmeans.cluster_centers_[:,0],kmeans.cluster_centers_[:,1],s=300,c='yellow',label='Centroids')
+        plt.title('Clusters of countries by Productivity')
+        plt.legend()
+        plt.show()
+
+
         
         
     def productionPerYear(self):
@@ -206,7 +254,7 @@ class Project():
 
 if __name__ == '__main__':
     plt.close('all')
-    p = Project(uri="mongodb://localhost:27017/", dbName= 'food', collection="FAO")
+    p = Project(dbName= 'food', collection="FAO")
     p.analytics()
     # print(p.insertOne())
     # print(p.insertOne(data="sdss"))
