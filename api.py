@@ -1,15 +1,15 @@
 from flask import Flask, request, send_file
+from flask_cors import CORS
 from app import Project
 from json import dumps, loads
 from bson.json_util import dumps as bsonDumps # to convert cursor object to json
 from defaults import *
 api = Flask(__name__)
-
-project = Project(dbName= 'test')
+CORS(api)
+project = Project(uri="mongodb://localhost:27017/", dbName= 'food', collection="FAO")
 
 @api.route('/head')
 def hello_world():
-    print (request.args.get('dbname'))
     return str(project.head())
 
 @api.route('/plot')

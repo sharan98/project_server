@@ -7,7 +7,7 @@ _DB_NAME = 'food'
 _URI = "mongodb+srv://{0}:{1}@cluster0-dohcp.mongodb.net".format(_USERNAME, _PASSWORD)
 
 def connectToDb(uri = _URI, dbName = _DB_NAME):
-    client = MongoClient(_URI)
+    client = MongoClient(uri)
     db = client[dbName]
     return db
 

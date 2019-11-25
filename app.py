@@ -1,14 +1,15 @@
 from data import *
 from defaults import URI, DB_NAME, COLLECTION
 import matplotlib.pyplot as plt
+from statistics import mean
 import numpy as np
 import seaborn as sns
 import pandas as pd
 import io
 
-
 class Project():
     def __init__(self, uri = URI, dbName = DB_NAME, collection = COLLECTION):
+        print('uri: {0}, db: {1}, coll: {2}'.format(uri, dbName, collection))
         self.db = connectToDb(uri, dbName)
         self.data = readToDataFrame(self.db, collection)
         """
@@ -26,15 +27,15 @@ class Project():
             new_df = pd.DataFrame.transpose(new_df) 
             new_df.columns = year_list
         """
-
-
-
-        
     
     def getData(self):
         return self.data
+
     def analytics(self):
+        
+
         df = self.data
+        df.replace('', 0)
         area_list = list(df['Area'].unique())
         year_list = list(df.iloc[:,10:].columns)
         
@@ -50,7 +51,6 @@ class Project():
             plt.plot(yearly_produce, label=ar)
         plt.xticks(np.arange(53), tuple(year_list), rotation=60)
         plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=8, mode="expand", borderaxespad=0.)
-
         
         # create a new Data Frame with countries as index and years as columns 
         new_df_dict = {}
@@ -65,16 +65,18 @@ class Project():
 
         #First, a new column which indicates mean produce of each state over the given years. Second, a ranking column which ranks countries on the basis of mean produce
         #new_df.head()
-        print(new_df)
+        # print(new_df.head())
         mean_produce = []
         for i in range(174):
-            mean_produce.append(new_df.iloc[i,:].astype(str).mean())
+            print(new_df.iloc[i,:].values)
+            l = [0 if x=='' else x for x in new_df.iloc[i,:].values]
+            mean_produce.append(mean(l))
             print(mean_produce)
         new_df['Mean_Produce'] = mean_produce
 
         new_df['Rank'] = new_df['Mean_Produce'].rank(ascending=False)
 
-        new_df.head()
+        print(new_df.head())
 
         # create another dataframe with items and their total production each year from 1961 to 2013
         item_list = list(df['Item'].unique())
@@ -85,22 +87,29 @@ class Project():
         for yr in year_list:
             item_produce = []
             for it in item_list:
-                item_produce.append(df[yr][df['Item']==it].sum())
+                l = [0 if x=='' else x for x in df[yr][df['Item']==it]]
+                item_produce.append(sum(l))
             item_df[yr] = item_produce
 
         # total amount produced for each commodity rank them in descending order 
         sum_col = []
         for i in range(115):
-            sum_col.append(item_df.iloc[i,1:].values.sum())
+            print(item_df.iloc[i,1:].values)    # first element is name of item
+            l = [0 if x=='' else x for x in item_df.iloc[i,1:].values]
+            sum_col.append(sum(l))
         item_df['Sum'] = sum_col
         item_df['Production_Rank'] = item_df['Sum'].rank(ascending=False)
 
-        item_df.head()
+        print(item_df.head())
 
         # heat map showing correlation of Year on year production 
         year_df = df.iloc[:,10:]
-        fig, ax = plt.subplots(figsize=(16,10))
+        print(year_df.head())
+        fig, ax = plt.subplots()
         sns.heatmap(year_df.corr(), ax=ax)
+        #print(heatmap)
+        plt.show()
+        
         
     def productionPerYear(self):
         df = self.data
@@ -193,11 +202,11 @@ class Project():
         return bytes_image
 
     def head(self):
-        return (self.data.head().values)
+        return (self.data.head().to_html())
 
 if __name__ == '__main__':
     plt.close('all')
-    p = Project()
+    p = Project(uri="mongodb://localhost:27017/", dbName= 'food', collection="FAO")
     p.analytics()
     # print(p.insertOne())
     # print(p.insertOne(data="sdss"))
