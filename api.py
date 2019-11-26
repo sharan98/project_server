@@ -14,7 +14,7 @@ def hello_world():
 
 @api.route('/plot')
 def get_plot():
-    bytes_obj = project.productionPerYear()
+    bytes_obj = project.plot()
     return send_file(bytes_obj,
                      attachment_filename='plot.png',
                      mimetype='image/png')
@@ -34,7 +34,7 @@ def find_from_db():
 
 @api.route('/crud/insertOne', methods=['POST'])
 def insert_one():
-    args = request.form
+    args = bytesToJSON(request.data)
     argsJSON = parseRequestArgs(insertArgsJSON, args)
     print (argsJSON)
     cursor = project.insertOne(**argsJSON)
@@ -45,7 +45,7 @@ def insert_one():
 
 @api.route('/crud/insertMany', methods=['POST'])
 def insert_many():
-    args = request.form
+    args = bytesToJSON(request.data)
     argsJSON = parseRequestArgs(insertArgsJSON, args)
     print (argsJSON)
     result = project.insertMany(**argsJSON)
@@ -55,7 +55,7 @@ def insert_many():
 
 @api.route('/crud/updateOne', methods=['POST'])
 def update_one():
-    args = request.form
+    args = bytesToJSON(request.data)
     argsJSON = parseRequestArgs(updateArgsJSON, args)
     print (argsJSON)
     result = project.updateOne(**argsJSON)
@@ -65,7 +65,7 @@ def update_one():
 
 @api.route('/crud/updateMany', methods=['POST'])
 def update_many():
-    args = request.form
+    args = bytesToJSON(request.data)
     argsJSON = parseRequestArgs(updateArgsJSON, args)
     print (argsJSON)
     result = project.updateMany(**argsJSON)
@@ -75,7 +75,7 @@ def update_many():
 
 @api.route('/crud/deleteOne', methods=['POST'])
 def delete_one():
-    args = request.form
+    args = bytesToJSON(request.data)
     argsJSON = parseRequestArgs(deleteArgsJSON, args)
     print (argsJSON)
     result = project.deleteOne(**argsJSON)
@@ -85,7 +85,7 @@ def delete_one():
 
 @api.route('/crud/deleteMany', methods=['POST'])
 def delete_many():
-    args = request.form
+    args = bytesToJSON(request.data)
     argsJSON = parseRequestArgs(deleteArgsJSON, args)
     print (argsJSON)
     result = project.deleteMany(**argsJSON)
@@ -104,4 +104,9 @@ def parseRequestArgs(defArgs, args):
         json[key] = loads(args.get(key))
     return (json)
 
+def bytesToJSON(args):
+    my_json = args.decode('utf8').replace("'", '"')
+    data = loads(my_json)
+    # s = dumps(data)
+    return data
 # https://stackoverflow.com/questions/30333299/pymongo-bson-convert-python-cursor-cursor-object-to-serializable-json-object

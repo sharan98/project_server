@@ -7,7 +7,7 @@ URI = "mongodb+srv://{0}:{1}@cluster0-dohcp.mongodb.net".format(_USERNAME, _PASS
 findArgsJSON = {
     'collection': COLLECTION,
     'filter': {},
-    'projection': None,
+    'projection': {'_id':0},
     'skip': 0,
     'limit': 0,
     'sort': None
