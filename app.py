@@ -123,6 +123,7 @@ class Project():
         item_df['Production_Rank'] = item_df['Sum'].rank(ascending=False)
         print()
         print(item_df.head())
+        #plt.close()
 
         #plt.close('all')
         # heat map showing correlation of Year on year production 
@@ -141,6 +142,39 @@ class Project():
         # self.year_heatmap_bytes_image = io.BytesIO()
         # plt.savefig(self.year_heatmap_bytes_image, format='png')
         # self.year_heatmap_bytes_image.seek(0)
+
+        #heatmap for products
+        item_df1 = pd.DataFrame.transpose(item_df.iloc[:,1:-2])
+        #item_df1.columns = item_list
+        item_df1 = item_df1
+        print(item_df.head())
+        print(item_df1.head())
+        item_df1= item_df1.dropna(axis = 1,how = 'any')
+        print("\n\n\n\n\n\n\n\n\n\n")
+        for item in item_df1:
+            print(item)
+        item_df1 = item_df1.apply(pd.to_numeric,errors = 'ignore')
+        fig, ax = plt.subplots(figsize = (56,56))
+        print(item_df1.corr())
+        sns.heatmap(item_df1.corr())
+        #plt.show()
+
+        #heat map for countries
+        area_df1 = pd.DataFrame.transpose(new_df)
+        area_df1.columns = area_list
+        print (area_df1)
+        area_df1 = area_df1.apply(pd.to_numeric,errors = 'ignore')
+        area_df1= area_df1.dropna(axis = 1,how = 'any')
+        print("\n\n\n\n\n\n\n\n\n\n")
+        for are in area_df1:
+            print(area_df1[are])
+        fig, ax = plt.subplots()
+        print(area_df1.corr())
+        sns.heatmap(area_df1.corr())
+        plt.show()
+        #,annot = True,xticklabels=1, yticklabels=1, center= 0.0
+        
+        
 
         # heat map for products over the years
         print("---------------------------")
