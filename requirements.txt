@@ -5,7 +5,7 @@ autopep8==1.4.3
 awscli==1.16.266
 botocore==1.13.2
 Brlapi==0.6.6
-certifi==2019.9.11
+certifi==2022.12.7
 chardet==3.0.4
 Click==7.0
 colorama==0.4.1
